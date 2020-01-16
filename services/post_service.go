@@ -11,22 +11,22 @@ type PostService interface {
 }
 
 func NewPostService(repo repositories.PostRepository) PostService {
-	return &postService{
+	return &postTmpService{
 		repo: repo,
 	}
 }
 
-type postService struct {
+type postTmpService struct {
 	repo repositories.PostRepository
 }
 
-func (s *postService) GetAll() []models.Post  {
+func (s *postTmpService) GetAll() []models.Post {
 	return s.repo.SelectMany(func(_ models.Post) bool {
 		return true
 	}, -1)
 }
 
-func (s *postService) GetByID(id int64) (models.Post, bool)  {
+func (s *postTmpService) GetByID(id int64) (models.Post, bool) {
 	return s.repo.Select(func(m models.Post) bool {
 		return m.ID == id
 	})

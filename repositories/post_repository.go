@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"deku/models"
-	"deku/sources"
 	"sync"
 )
 
@@ -25,11 +24,10 @@ type postTmpRepository struct {
 
 const (
 	ReadOnlyMode = iota
-	ReadWriteMode
 )
 
 func (r *postTmpRepository) Exec(query Query, action Query, actionLimit int, mode int) (ok bool) {
-	loop := 0
+	loops := 0
 	if mode == ReadOnlyMode {
 		r.mu.RLock()
 		defer r.mu.RUnlock()
@@ -42,8 +40,8 @@ func (r *postTmpRepository) Exec(query Query, action Query, actionLimit int, mod
 		ok = query(post)
 		if ok {
 			if action(post) {
-				loop++
-				if actionLimit >= loop {
+				loops++
+				if actionLimit >= loops {
 					break
 				}
 			}
@@ -54,14 +52,12 @@ func (r *postTmpRepository) Exec(query Query, action Query, actionLimit int, mod
 }
 
 func (r *postTmpRepository) Select(query Query) (post models.Post, found bool) {
-	found = r.Exec(query, func(data models.Post) bool {
-		post = data
+	found = r.Exec(query, func(m models.Post) bool {
+		post = m
 		return true
 	}, 1, ReadOnlyMode)
-	if found {
+	if !found {
 		post = models.Post{}
-	}else {
-		post = sources.Posts[1]
 	}
 
 	return
@@ -70,10 +66,8 @@ func (r *postTmpRepository) Select(query Query) (post models.Post, found bool) {
 func (r *postTmpRepository) SelectMany(query Query, limit int) (data []models.Post) {
 	r.Exec(query, func(source models.Post) bool {
 		data = append(data, source)
-		return  true
+		return true
 	}, limit, ReadOnlyMode)
 
 	return
 }
-
-

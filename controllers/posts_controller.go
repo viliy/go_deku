@@ -4,21 +4,18 @@ import (
 	"deku/models"
 	"deku/services"
 	"deku/sources"
+	"fmt"
 )
 
 type PostsController struct {
-	service services.PostService
+	Service services.PostService
 }
 
-func (c *PostsController) Get() (data []models.Post) {
-	return c.service.GetAll()
+func (c *PostsController) Get() (res []models.Post) {
+	return c.Service.GetAll()
 }
 
 func (c *PostsController) GetBy(id int64) (data models.Post, found bool) {
-	res, found := c.service.GetByID(id)
-	if found {
-		return res, found
-	}else {
-		return sources.Posts[1], false
-	}
+	fmt.Printf("%v\n", sources.Posts[1])
+	return c.Service.GetByID(id)
 }
